@@ -42,7 +42,7 @@ app.get("/get-stock-prevent", async (req, res) => {
 
     for (let i = 0; i < 10; i++) {
         try {
-            await sleep(10000);
+            await sleep(5000);
             const resData = await axios.get(`https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=20210601&stockNo=2331&_=1625479308550`);
 
             result.push(resData.data)
