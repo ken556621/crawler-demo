@@ -97,6 +97,60 @@ app.get("/get-stock-pupeeteer", async (req, res) => {
 })
 
 
+
+// 104 求職網站抓取資料示範
+
+const fetchFrontendJob = async (targetPage) => {
+    const resData = await axios.get(`https://www.104.com.tw/jobs/search/?keyword=%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%B8%AB&order=1&jobsource=2018indexpoc&ro=${targetPage}`);
+
+    const $ = await cheerio.load(resData.data);
+
+    const jobTitle = [];
+    const companyTitle = [];
+
+    const formatData = (data) => {
+        return data.replace("\n", "").trim();
+    }
+
+    await $("article li a").each((i, newData) => {
+        const formatedData = formatData($(newData).text());
+        companyTitle.push(formatedData)
+    });
+
+    await $("#js-job-content > article > div.b-block__left > h2 > a").each((i, newData) => {
+        jobTitle.push($(newData).text())
+    });
+
+    return { companyTitle, jobTitle }
+}
+
+app.get("/get-frontend-jobs", async (req, res) => {
+    const result = [];
+
+    const combineJobAndCompany = (jobList, companyList) => {
+        return jobList.map((item, i) => {
+            return {
+                jobTitle: item,
+                companyTitle: companyList[i]
+            }
+        })
+    };
+
+    for (let i = 0; i < 5; i++) {
+        const {
+            companyTitle,
+            jobTitle
+        } = await fetchFrontendJob(i);
+
+        const combinedData = combineJobAndCompany(jobTitle, companyTitle);
+
+        result.push(...combinedData)
+    }
+
+    res.send(result)
+})
+
+
 app.listen(port, () => {
     console.log(`App is listening on http://localhost:${port}`)
 });
